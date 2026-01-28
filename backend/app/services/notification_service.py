@@ -117,7 +117,7 @@ class NotificationService:
 
         severity = alert_data.get("severity", "Medium")
         alert_id = alert_data.get("id")
-        description = alert_data.get("description", "New alert")
+        description = alert_data.get("description") or "New alert"
 
         # Determine priority based on severity
         priority_map = {

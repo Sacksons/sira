@@ -108,15 +108,18 @@ async def create_alert(
 
     logger.info(f"Alert created manually: ID {alert.id} by {current_user.username}")
 
-    # Send notification
-    notification_service = NotificationService(db)
-    await notification_service.notify_alert({
-        "id": alert.id,
-        "severity": alert.severity,
-        "description": alert.description,
-        "domain": alert.domain,
-        "created_at": alert.created_at.isoformat() if alert.created_at else None
-    })
+    # Send notification (non-blocking, errors are logged not raised)
+    try:
+        notification_service = NotificationService(db)
+        await notification_service.notify_alert({
+            "id": alert.id,
+            "severity": alert.severity,
+            "description": alert.description,
+            "domain": alert.domain,
+            "created_at": alert.created_at.isoformat() if alert.created_at else None
+        })
+    except Exception as e:
+        logger.warning(f"Failed to send alert notification: {e}")
 
     return alert
 
@@ -207,17 +210,20 @@ async def assign_alert(
 
     logger.info(f"Alert assigned: ID {alert_id} to user {user_id} by {current_user.username}")
 
-    # Notify assignee
-    notification_service = NotificationService(db)
-    await notification_service.notify_alert(
-        {
-            "id": alert.id,
-            "severity": alert.severity,
-            "description": f"Alert assigned to you: {alert.description}",
-            "domain": alert.domain,
-        },
-        target_user_ids=[user_id]
-    )
+    # Notify assignee (non-blocking)
+    try:
+        notification_service = NotificationService(db)
+        await notification_service.notify_alert(
+            {
+                "id": alert.id,
+                "severity": alert.severity,
+                "description": f"Alert assigned to you: {alert.description}",
+                "domain": alert.domain,
+            },
+            target_user_ids=[user_id]
+        )
+    except Exception as e:
+        logger.warning(f"Failed to send assignment notification: {e}")
 
     return {"message": "Alert assigned", "alert_id": alert_id, "assigned_to": user_id}
 
