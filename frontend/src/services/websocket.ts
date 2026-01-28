@@ -8,7 +8,7 @@ class WebSocketService {
   private maxReconnectAttempts = 5
   private reconnectDelay = 3000
   private messageHandlers: Map<string, Set<MessageHandler>> = new Map()
-  private pingInterval: NodeJS.Timeout | null = null
+  private pingInterval: ReturnType<typeof setInterval> | null = null
 
   connect() {
     const token = useAuthStore.getState().token

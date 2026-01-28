@@ -19,7 +19,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js'
-import { Doughnut, Bar } from 'react-chartjs-2'
+import { Doughnut } from 'react-chartjs-2'
 
 ChartJS.register(
   CategoryScale,
