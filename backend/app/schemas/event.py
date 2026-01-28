@@ -25,7 +25,7 @@ class EventBase(BaseModel):
         pattern="^(info|warning|critical)$"
     )
     description: Optional[str] = None
-    metadata: Optional[str] = None
+    event_metadata: Optional[str] = None
     source: Optional[str] = Field(None, max_length=100)
 
 

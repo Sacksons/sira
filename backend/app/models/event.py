@@ -35,7 +35,7 @@ class Event(Base):
     )  # planned, actual, security, operational
     severity = Column(String(20), default="info")  # info, warning, critical
     description = Column(Text)
-    metadata = Column(Text)  # JSON for additional data
+    event_metadata = Column(Text)  # JSON for additional data
     source = Column(String(100))  # iot, manual, ais, satellite
     created_at = Column(
         DateTime(timezone=True),

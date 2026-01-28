@@ -11,18 +11,25 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Try to import weasyprint, fall back to reportlab
+# Always use reportlab for local development (weasyprint requires system libraries)
+PDF_ENGINE = "reportlab"
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+
+# Optional: Try to import weasyprint for production environments with proper dependencies
+HTML = None
+CSS = None
 try:
     from weasyprint import HTML, CSS
     PDF_ENGINE = "weasyprint"
-except ImportError:
-    PDF_ENGINE = "reportlab"
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import letter, A4
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+except (ImportError, OSError):
+    # WeasyPrint requires system libraries (pango, cairo, gdk-pixbuf)
+    # Fall back to reportlab which is pure Python
+    pass
 
 
 class PDFReportService:

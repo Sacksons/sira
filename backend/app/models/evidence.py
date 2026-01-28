@@ -27,7 +27,7 @@ class Evidence(Base):
     original_filename = Column(String(255))
     file_size = Column(Integer)  # bytes
     mime_type = Column(String(100))
-    metadata = Column(Text)  # JSON: uploader, timestamp, location, device
+    evidence_metadata = Column(Text)  # JSON: uploader, timestamp, location, device
     verification_status = Column(
         String(50),
         default="pending"

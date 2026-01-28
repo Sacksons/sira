@@ -13,7 +13,7 @@ class EvidenceBase(BaseModel):
     evidence_type: str = Field(..., max_length=50)
     file_ref: str = Field(..., max_length=500)
     original_filename: Optional[str] = Field(None, max_length=255)
-    metadata: Optional[str] = None
+    evidence_metadata: Optional[str] = None
     notes: Optional[str] = None
 
 
