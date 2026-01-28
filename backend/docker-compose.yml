@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: sira-postgres
+    environment:
+      POSTGRES_USER: sira_user
+      POSTGRES_PASSWORD: sira_password
+      POSTGRES_DB: sira_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sira_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sira-network
+
+  # FastAPI Application
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sira-api
+    environment:
+      DATABASE_URL: postgresql://sira_user:sira_password@postgres:5432/sira_db
+      SECRET_KEY: development-secret-key-change-in-production
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - sira-network
+
+  # pgAdmin (Optional - for database management)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: sira-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@sira.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - sira-network
+
+volumes:
+  postgres_data:
+
+networks:
+  sira-network:
+    driver: bridge
