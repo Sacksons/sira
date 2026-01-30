@@ -11,8 +11,8 @@ psycopg2-binary==2.9.9
 alembic==1.13.1
 PyMySQL==1.1.0  # MySQL support for PythonAnywhere
 
-# ASGI-to-WSGI adapter for PythonAnywhere
-a]sgi-wsgi-translator==0.2.0
+# ASGI support
+asgiref==3.7.2
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0
