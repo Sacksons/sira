@@ -16,7 +16,7 @@ export default function Login() {
     try {
       await login(username, password)
       toast.success('Welcome to SIRA Platform!')
-      navigate('/')
+      navigate('/app')
     } catch (err) {
       toast.error('Login failed. Please check your credentials.')
     }

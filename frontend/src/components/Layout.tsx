@@ -18,12 +18,12 @@ import { notificationsApi } from '../services/api'
 import toast from 'react-hot-toast'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Alerts', href: '/alerts', icon: BellAlertIcon },
-  { name: 'Cases', href: '/cases', icon: FolderIcon },
-  { name: 'Movements', href: '/movements', icon: TruckIcon },
-  { name: 'Users', href: '/users', icon: UsersIcon },
-  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
+  { name: 'Dashboard', href: '/app', icon: HomeIcon },
+  { name: 'Alerts', href: '/app/alerts', icon: BellAlertIcon },
+  { name: 'Cases', href: '/app/cases', icon: FolderIcon },
+  { name: 'Movements', href: '/app/movements', icon: TruckIcon },
+  { name: 'Users', href: '/app/users', icon: UsersIcon },
+  { name: 'Settings', href: '/app/settings', icon: Cog6ToothIcon },
 ]
 
 function classNames(...classes: string[]) {
@@ -112,7 +112,7 @@ export default function Layout({ children }: LayoutProps) {
                                 <Link
                                   to={item.href}
                                   className={classNames(
-                                    location.pathname === item.href
+                                    location.pathname === item.href || (item.href === '/app' && location.pathname === '/app/')
                                       ? 'bg-primary-700 text-white'
                                       : 'text-primary-200 hover:text-white hover:bg-primary-700',
                                     'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
@@ -150,7 +150,7 @@ export default function Layout({ children }: LayoutProps) {
                         <Link
                           to={item.href}
                           className={classNames(
-                            location.pathname === item.href
+                            location.pathname === item.href || (item.href === '/app' && location.pathname === '/app/')
                               ? 'bg-primary-700 text-white'
                               : 'text-primary-200 hover:text-white hover:bg-primary-700',
                             'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
