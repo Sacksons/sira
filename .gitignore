@@ -77,7 +77,7 @@ site/
 
 # Node.js / Frontend
 node_modules/
-frontend/dist/
+# frontend/dist/ - Committed for PythonAnywhere deployment
 frontend/build/
 .npm
 .eslintcache
