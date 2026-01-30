@@ -50,9 +50,33 @@ jobs:
           PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
         run: |
           echo "Deploying to PythonAnywhere production..."
+
+          # Pull latest code on PythonAnywhere via console API
+          echo "Pulling latest code..."
+          curl -s -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USERNAME/consoles/" \
+            -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"executable": "bash", "arguments": "-c \"cd ~/sira && git pull origin main\""}' || true
+
+          # Wait for code pull to complete
+          sleep 10
+
           # Reload the web app
-          # curl -X POST "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USERNAME/webapps/$PYTHONANYWHERE_USERNAME.pythonanywhere.com/reload/" \
-          #   -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN"
+          echo "Reloading web app..."
+          RELOAD_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USERNAME/webapps/$PYTHONANYWHERE_USERNAME.pythonanywhere.com/reload/" \
+            -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN")
+
+          HTTP_CODE=$(echo "$RELOAD_RESPONSE" | tail -n1)
+          RESPONSE_BODY=$(echo "$RELOAD_RESPONSE" | sed '$d')
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "Web app reloaded successfully!"
+          else
+            echo "Warning: Reload returned HTTP $HTTP_CODE"
+            echo "Response: $RESPONSE_BODY"
+          fi
 
       - name: Notify deployment
         run: |

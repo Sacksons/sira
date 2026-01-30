@@ -7,6 +7,17 @@ This guide walks you through deploying the SIRA platform to PythonAnywhere.
 - PythonAnywhere account (Hacker plan or above recommended for custom domains)
 - GitHub repository with SIRA code pushed
 
+## Quick Start Checklist
+
+- [ ] Create PythonAnywhere account
+- [ ] Clone repository
+- [ ] Set up virtual environment
+- [ ] Create and configure MySQL database
+- [ ] Configure environment variables
+- [ ] Set up WSGI file
+- [ ] Configure static files
+- [ ] Test deployment
+
 ## Step 1: Create PythonAnywhere Account
 
 1. Go to [PythonAnywhere](https://www.pythonanywhere.com)
@@ -33,10 +44,12 @@ mkvirtualenv --python=/usr/bin/python3.11 sira
 # Activate it (if not already active)
 workon sira
 
-# Install backend dependencies
+# Install backend dependencies (use PythonAnywhere-specific requirements)
 cd ~/sira/backend
-pip install -r requirements.txt
+pip install -r requirements-pythonanywhere.txt
 ```
+
+**Note:** We use `requirements-pythonanywhere.txt` which includes MySQL support and excludes development dependencies.
 
 ## Step 4: Configure Environment Variables
 
@@ -110,27 +123,47 @@ In the **Virtualenv** section:
 
 ### Configure WSGI File
 
-1. Click on the WSGI configuration file link
-2. Delete all contents and replace with:
+1. Click on the WSGI configuration file link (e.g., `/var/www/YOUR_USERNAME_pythonanywhere_com_wsgi.py`)
+2. Delete all contents and copy the content from `backend/pythonanywhere_wsgi.py`
+3. **Important:** Replace all placeholders with your actual values:
+   - Replace `<username>` with your PythonAnywhere username
+   - Replace `<db_password>` with your MySQL password
+   - Generate and set unique `SECRET_KEY` and `JWT_SECRET_KEY` values
 
 ```python
 import sys
 import os
 
-# Add your project to the path
-project_home = '/home/YOUR_USERNAME/sira/backend'
+# Replace with your PythonAnywhere username
+PYTHONANYWHERE_USERNAME = 'YOUR_USERNAME'
+
+# Project paths
+project_home = f'/home/{PYTHONANYWHERE_USERNAME}/sira/backend'
+venv_path = f'/home/{PYTHONANYWHERE_USERNAME}/.virtualenvs/sira/lib/python3.11/site-packages'
+
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
+if venv_path not in sys.path:
+    sys.path.insert(0, venv_path)
 
 # Set environment variables
-os.environ['DATABASE_URL'] = 'mysql+pymysql://YOUR_USERNAME$sira:PASSWORD@YOUR_USERNAME.mysql.pythonanywhere-services.com/YOUR_USERNAME$sira'
-os.environ['SECRET_KEY'] = 'your-secret-key'
-os.environ['JWT_SECRET_KEY'] = 'your-jwt-secret'
+os.environ['DATABASE_URL'] = f'mysql+pymysql://{PYTHONANYWHERE_USERNAME}$sira:YOUR_PASSWORD@{PYTHONANYWHERE_USERNAME}.mysql.pythonanywhere-services.com/{PYTHONANYWHERE_USERNAME}$sira'
+os.environ['SECRET_KEY'] = 'your-generated-secret-key'
+os.environ['JWT_SECRET_KEY'] = 'your-generated-jwt-secret-key'
 os.environ['ENVIRONMENT'] = 'production'
+os.environ['DEBUG'] = 'False'
+os.environ['LOG_LEVEL'] = 'WARNING'
+os.environ['CORS_ORIGINS'] = f'https://{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
 
-# Import and run the FastAPI app
-from app.main import app
-application = app
+# Import the FastAPI app and wrap it for WSGI
+from app.main import app as fastapi_app
+from asgi_wsgi_translator import asgi_to_wsgi
+application = asgi_to_wsgi(fastapi_app)
+```
+
+**Generate secure keys:**
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 ## Step 8: Configure Static Files (Frontend)
@@ -224,11 +257,43 @@ For background tasks (optional):
 workon sira && cd ~/sira/backend && python -c "from app.services.alert_engine import AlertEngine; AlertEngine().process_pending_events()"
 ```
 
+## CI/CD Auto-Deployment (Optional)
+
+To enable automatic deployments when you push to the main branch:
+
+### 1. Get PythonAnywhere API Token
+
+1. Go to **Account** > **API Token** on PythonAnywhere
+2. Generate a new API token
+3. Copy and save the token securely
+
+### 2. Configure GitHub Secrets
+
+Go to your GitHub repository **Settings** > **Secrets and variables** > **Actions**, and add:
+
+| Secret Name | Value |
+|-------------|-------|
+| `PYTHONANYWHERE_USERNAME` | Your PythonAnywhere username |
+| `PYTHONANYWHERE_API_TOKEN` | Your API token from step 1 |
+| `DATABASE_URL` | Your PythonAnywhere MySQL connection string |
+
+### 3. Run Deployment
+
+1. Go to **Actions** tab in GitHub
+2. Select **Deploy SIRA Platform** workflow
+3. Click **Run workflow**
+4. Select `production` environment
+5. Click **Run workflow**
+
+The workflow will pull the latest code and reload your web app automatically.
+
 ## Security Checklist
 
-- [ ] Changed default SECRET_KEY
-- [ ] Changed default JWT_SECRET_KEY
-- [ ] Set DEBUG=false
-- [ ] Configured HTTPS
-- [ ] Set strong database password
-- [ ] Created unique admin password
+- [ ] Changed default SECRET_KEY (generate with `secrets.token_hex(32)`)
+- [ ] Changed default JWT_SECRET_KEY (generate with `secrets.token_hex(32)`)
+- [ ] Set DEBUG=False in WSGI file
+- [ ] HTTPS enabled (automatic on *.pythonanywhere.com)
+- [ ] Set strong MySQL database password
+- [ ] Created unique admin password (run `python create_admin.py`)
+- [ ] Verified CORS_ORIGINS only includes your domain
+- [ ] Removed or secured any test/demo endpoints
