@@ -194,9 +194,46 @@ jobs:
         env:
           PYTHONANYWHERE_USERNAME: ${{ secrets.PYTHONANYWHERE_USERNAME }}
           PYTHONANYWHERE_API_TOKEN: ${{ secrets.PYTHONANYWHERE_API_TOKEN }}
+          PYTHONANYWHERE_DOMAIN: ${{ secrets.PYTHONANYWHERE_USERNAME }}.pythonanywhere.com
         run: |
           echo "Deploying to PythonAnywhere..."
-          # Add deployment script here
-          # curl -X POST "https://www.pythonanywhere.com/api/v0/user/$PYTHONANYWHERE_USERNAME/webapps/$PYTHONANYWHERE_USERNAME.pythonanywhere.com/reload/" \
-          #   -H "Authorization: Token $PYTHONANYWHERE_API_TOKEN"
-          echo "Deployment complete (placeholder)"
+
+          # Pull latest code via console API
+          echo "Creating console to pull latest code..."
+          CONSOLE_RESPONSE=$(curl -s -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/consoles/" \
+            -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d '{"executable": "bash", "arguments": "", "working_directory": "/home/'"${PYTHONANYWHERE_USERNAME}"'"}')
+
+          CONSOLE_ID=$(echo $CONSOLE_RESPONSE | python3 -c "import sys, json; print(json.load(sys.stdin).get('id', ''))" 2>/dev/null || echo "")
+
+          if [ -n "$CONSOLE_ID" ]; then
+            echo "Console created: $CONSOLE_ID"
+            # Send commands to pull code and install dependencies
+            curl -s -X POST \
+              "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/consoles/${CONSOLE_ID}/send_input/" \
+              -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              -d '{"input": "cd ~/sira && git pull origin main && source ~/.virtualenvs/sira/bin/activate && cd backend && pip install -r requirements.txt && alembic upgrade head\n"}'
+
+            # Wait for commands to execute
+            sleep 30
+          fi
+
+          # Reload the web app
+          echo "Reloading web app..."
+          RELOAD_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://www.pythonanywhere.com/api/v0/user/${PYTHONANYWHERE_USERNAME}/webapps/${PYTHONANYWHERE_DOMAIN}/reload/" \
+            -H "Authorization: Token ${PYTHONANYWHERE_API_TOKEN}")
+
+          HTTP_CODE=$(echo "$RELOAD_RESPONSE" | tail -n 1)
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "Web app reloaded successfully!"
+          else
+            echo "Warning: Reload returned HTTP $HTTP_CODE"
+          fi
+
+          echo "Deployment complete!"
+          echo "App URL: https://${PYTHONANYWHERE_DOMAIN}"
