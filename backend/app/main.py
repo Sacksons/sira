@@ -44,16 +44,25 @@ app = FastAPI(
     ## SIRA Platform API
 
     **Shipping Intelligence & Risk Analytics Platform**
+    **Multimodal Control Tower + Fleet Management + Market Intelligence + AI**
 
     Sponsored by: Energie Partners (EP)
 
-    ### Features:
-    - **Digital Control Tower**: Track cargo movements and logistics
+    ### Core Modules:
+    - **Multimodal Control Tower**: Real-time operational visibility across all assets and corridor segments
+    - **Vessel Tracking**: AIS-integrated vessel position tracking and charter management
+    - **Fleet & Asset Management**: Truck, rail, barge, and equipment lifecycle management with dispatch
+    - **Port & Terminal Operations**: Berth allocation, anchorage management, and congestion tracking
+    - **Shipment Workspace**: End-to-end shipment tracking with milestones and exception management
+    - **Market Intelligence**: Freight rate benchmarks, market indices, and demurrage analytics
+    - **Chain-of-Custody**: Digital seals, audit trails, and tamper-evident custody tracking
+    - **SIRA AI**: ETA prediction, demurrage risk scoring, and anomaly detection
+
+    ### Legacy Modules:
     - **Security Intelligence**: Monitor events, manage alerts, and investigate incidents
     - **Case Management**: Handle security cases with evidence tracking
     - **Playbook System**: Standardized incident response procedures
     - **Real-time Notifications**: WebSocket and email alerts
-    - **Compliance Export**: Generate audit-ready documentation (PDF/JSON)
 
     ### Authentication:
     All endpoints (except `/health` and `/api/v1/auth/token`) require authentication.

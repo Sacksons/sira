@@ -11,6 +11,11 @@ import {
   Cog6ToothIcon,
   BellIcon,
   ArrowRightOnRectangleIcon,
+  GlobeAltIcon,
+  BuildingOffice2Icon,
+  CubeIcon,
+  ChartBarSquareIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../stores/authStore'
 import { wsService } from '../services/websocket'
@@ -19,9 +24,14 @@ import toast from 'react-hot-toast'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: HomeIcon },
+  { name: 'Control Tower', href: '/control-tower', icon: GlobeAltIcon },
+  { name: 'Shipments', href: '/shipments', icon: DocumentTextIcon },
+  { name: 'Fleet & Assets', href: '/fleet', icon: TruckIcon },
+  { name: 'Ports', href: '/ports', icon: BuildingOffice2Icon },
+  { name: 'Market Intel', href: '/market', icon: ChartBarSquareIcon },
   { name: 'Alerts', href: '/alerts', icon: BellAlertIcon },
   { name: 'Cases', href: '/cases', icon: FolderIcon },
-  { name: 'Movements', href: '/movements', icon: TruckIcon },
+  { name: 'Movements', href: '/movements', icon: CubeIcon },
   { name: 'Users', href: '/users', icon: UsersIcon },
   { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
 ]

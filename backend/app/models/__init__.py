@@ -11,6 +11,16 @@ from app.models.case import Case
 from app.models.playbook import Playbook
 from app.models.evidence import Evidence
 from app.models.notification import Notification, NotificationPreference
+from app.models.vessel import Vessel
+from app.models.port import Port, Berth, BerthBooking
+from app.models.asset import Asset, MaintenanceRecord, DispatchRecord
+from app.models.corridor import Corridor, Geofence
+from app.models.shipment import (
+    Shipment, ShipmentMilestone, CustodyEvent,
+    ShipmentDocument, ShipmentException,
+)
+from app.models.freight import FreightRate, MarketIndex, DemurrageRecord
+from app.models.iot_device import IoTDevice, TelemetryReading
 
 __all__ = [
     "User",
@@ -22,4 +32,23 @@ __all__ = [
     "Evidence",
     "Notification",
     "NotificationPreference",
+    "Vessel",
+    "Port",
+    "Berth",
+    "BerthBooking",
+    "Asset",
+    "MaintenanceRecord",
+    "DispatchRecord",
+    "Corridor",
+    "Geofence",
+    "Shipment",
+    "ShipmentMilestone",
+    "CustodyEvent",
+    "ShipmentDocument",
+    "ShipmentException",
+    "FreightRate",
+    "MarketIndex",
+    "DemurrageRecord",
+    "IoTDevice",
+    "TelemetryReading",
 ]

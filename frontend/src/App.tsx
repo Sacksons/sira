@@ -8,6 +8,11 @@ import Cases from './pages/Cases'
 import Movements from './pages/Movements'
 import Users from './pages/Users'
 import Settings from './pages/Settings'
+import ControlTower from './pages/ControlTower'
+import FleetManagement from './pages/FleetManagement'
+import PortOperations from './pages/PortOperations'
+import MarketIntelligence from './pages/MarketIntelligence'
+import ShipmentWorkspace from './pages/ShipmentWorkspace'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore()
@@ -25,6 +30,11 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/control-tower" element={<ControlTower />} />
+                <Route path="/shipments" element={<ShipmentWorkspace />} />
+                <Route path="/fleet" element={<FleetManagement />} />
+                <Route path="/ports" element={<PortOperations />} />
+                <Route path="/market" element={<MarketIntelligence />} />
                 <Route path="/alerts" element={<Alerts />} />
                 <Route path="/cases" element={<Cases />} />
                 <Route path="/movements" element={<Movements />} />

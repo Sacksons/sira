@@ -104,3 +104,90 @@ export const notificationsApi = {
   getPreferences: () => api.get('/api/v1/notifications/preferences'),
   updatePreferences: (data: any) => api.put('/api/v1/notifications/preferences', data),
 }
+
+export const controlTowerApi = {
+  getOverview: () => api.get('/api/v1/control-tower/overview'),
+  getMapData: () => api.get('/api/v1/control-tower/map-data'),
+  getKpis: (days?: number) =>
+    api.get('/api/v1/control-tower/kpis', { params: days !== undefined ? { days } : undefined }),
+}
+
+export const vesselsApi = {
+  getAll: (params?: Record<string, any>) => api.get('/api/v1/vessels/', { params }),
+  getById: (id: number) => api.get(`/api/v1/vessels/${id}`),
+  getPositions: () => api.get('/api/v1/vessels/positions'),
+  create: (data: any) => api.post('/api/v1/vessels/', data),
+  update: (id: number, data: any) => api.put(`/api/v1/vessels/${id}`, data),
+  updatePosition: (id: number, data: any) => api.put(`/api/v1/vessels/${id}/position`, data),
+}
+
+export const portsApi = {
+  getAll: (params?: Record<string, any>) => api.get('/api/v1/ports/', { params }),
+  getById: (id: number) => api.get(`/api/v1/ports/${id}`),
+  create: (data: any) => api.post('/api/v1/ports/', data),
+  getBerths: (portId: number) => api.get(`/api/v1/ports/${portId}/berths`),
+  createBerth: (portId: number, data: any) => api.post(`/api/v1/ports/${portId}/berths`, data),
+  getBookings: (params?: Record<string, any>) => api.get('/api/v1/ports/bookings/', { params }),
+  createBooking: (data: any) => api.post('/api/v1/ports/bookings/', data),
+  updateBooking: (id: number, data: any) => api.put(`/api/v1/ports/bookings/${id}`, data),
+  getCongestionSummary: () => api.get('/api/v1/ports/congestion/summary'),
+}
+
+export const fleetApi = {
+  getAssets: (params?: Record<string, any>) => api.get('/api/v1/fleet/assets/', { params }),
+  getAssetById: (id: number) => api.get(`/api/v1/fleet/assets/${id}`),
+  createAsset: (data: any) => api.post('/api/v1/fleet/assets/', data),
+  updateAsset: (id: number, data: any) => api.put(`/api/v1/fleet/assets/${id}`, data),
+  getAvailability: () => api.get('/api/v1/fleet/assets/availability'),
+  getUtilization: () => api.get('/api/v1/fleet/assets/utilization'),
+  getDispatches: (params?: Record<string, any>) => api.get('/api/v1/fleet/dispatch/', { params }),
+  createDispatch: (data: any) => api.post('/api/v1/fleet/dispatch/', data),
+  updateDispatch: (id: number, data: any) => api.put(`/api/v1/fleet/dispatch/${id}`, data),
+  getMaintenance: (params?: Record<string, any>) =>
+    api.get('/api/v1/fleet/maintenance/', { params }),
+  createMaintenance: (data: any) => api.post('/api/v1/fleet/maintenance/', data),
+  updateMaintenance: (id: number, data: any) =>
+    api.put(`/api/v1/fleet/maintenance/${id}`, data),
+}
+
+export const corridorsApi = {
+  getAll: (params?: Record<string, any>) => api.get('/api/v1/corridors/', { params }),
+  getById: (id: number) => api.get(`/api/v1/corridors/${id}`),
+  create: (data: any) => api.post('/api/v1/corridors/', data),
+}
+
+export const shipmentsApi = {
+  getAll: (params?: Record<string, any>) => api.get('/api/v1/shipments/', { params }),
+  getActive: () => api.get('/api/v1/shipments/active'),
+  getAtRisk: (threshold?: number) =>
+    api.get('/api/v1/shipments/at-risk', {
+      params: threshold !== undefined ? { threshold } : undefined,
+    }),
+  getById: (id: number) => api.get(`/api/v1/shipments/${id}`),
+  create: (data: any) => api.post('/api/v1/shipments/', data),
+  update: (id: number, data: any) => api.put(`/api/v1/shipments/${id}`, data),
+  getMilestones: (id: number) => api.get(`/api/v1/shipments/${id}/milestones`),
+  createMilestone: (id: number, data: any) =>
+    api.post(`/api/v1/shipments/${id}/milestones`, data),
+  getCustodyEvents: (id: number) => api.get(`/api/v1/shipments/${id}/custody`),
+  createCustodyEvent: (id: number, data: any) =>
+    api.post(`/api/v1/shipments/${id}/custody`, data),
+  getDocuments: (id: number) => api.get(`/api/v1/shipments/${id}/documents`),
+  createDocument: (id: number, data: any) =>
+    api.post(`/api/v1/shipments/${id}/documents`, data),
+  getExceptions: (id: number) => api.get(`/api/v1/shipments/${id}/exceptions`),
+  createException: (id: number, data: any) =>
+    api.post(`/api/v1/shipments/${id}/exceptions`, data),
+}
+
+export const marketApi = {
+  getRates: (params?: Record<string, any>) => api.get('/api/v1/market/rates/', { params }),
+  getRateBenchmarks: (params?: Record<string, any>) =>
+    api.get('/api/v1/market/rates/benchmark', { params }),
+  createRate: (data: any) => api.post('/api/v1/market/rates/', data),
+  getIndices: (params?: Record<string, any>) => api.get('/api/v1/market/indices/', { params }),
+  getLatestIndices: () => api.get('/api/v1/market/indices/latest'),
+  getDemurrageRecords: (params?: Record<string, any>) =>
+    api.get('/api/v1/market/demurrage/', { params }),
+  getDemurrageExposure: () => api.get('/api/v1/market/demurrage/exposure'),
+}
