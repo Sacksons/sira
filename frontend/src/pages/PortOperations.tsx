@@ -3,8 +3,6 @@ import { useQuery } from '@tanstack/react-query'
 import { portsApi } from '../services/api'
 import {
   BuildingOffice2Icon,
-  QueueListIcon,
-  ClockIcon,
 } from '@heroicons/react/24/outline'
 import { Bar } from 'react-chartjs-2'
 

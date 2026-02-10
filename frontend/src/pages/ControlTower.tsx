@@ -8,7 +8,6 @@ import {
   MapPinIcon,
   ClockIcon,
   ShieldExclamationIcon,
-  ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline'
 import { Bar, Doughnut } from 'react-chartjs-2'
 import {

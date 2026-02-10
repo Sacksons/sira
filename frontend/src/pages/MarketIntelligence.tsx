@@ -3,10 +3,8 @@ import { marketApi } from '../services/api'
 import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  CurrencyDollarIcon,
-  ChartBarSquareIcon,
 } from '@heroicons/react/24/outline'
-import { Line, Bar } from 'react-chartjs-2'
+import { Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
