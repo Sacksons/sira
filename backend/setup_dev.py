@@ -8,6 +8,39 @@ Usage: python setup_dev.py
 import os
 import sys
 
+# Ensure .env exists with SQLite config (fix PostgreSQL errors automatically)
+ENV_CONTENT = (
+    "# SIRA Platform - Local Development Environment\n"
+    "APP_NAME=SIRA Platform\n"
+    "APP_VERSION=2.0.0\n"
+    "DEBUG=True\n"
+    "LOG_LEVEL=INFO\n"
+    "DATABASE_URL=sqlite:///./sira_dev.db\n"
+    "SECRET_KEY=dev-secret-key-change-in-production-min-32-chars-long\n"
+    "ALGORITHM=HS256\n"
+    "ACCESS_TOKEN_EXPIRE_MINUTES=120\n"
+    "ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000\n"
+)
+
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+needs_fix = False
+
+if not os.path.exists(env_path):
+    needs_fix = True
+    print("[AUTO] No .env file found.")
+else:
+    # Check if existing .env has PostgreSQL (which won't work without a PG server)
+    with open(env_path, "r") as f:
+        content = f.read()
+    if "postgresql://" in content:
+        needs_fix = True
+        print("[AUTO] .env has PostgreSQL config. Switching to SQLite for local dev...")
+
+if needs_fix:
+    with open(env_path, "w") as f:
+        f.write(ENV_CONTENT)
+    print(f"[AUTO] Created {env_path} with SQLite configuration.")
+
 from dotenv import load_dotenv
 load_dotenv()
 
