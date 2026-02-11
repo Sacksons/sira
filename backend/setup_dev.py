@@ -23,23 +23,26 @@ ENV_CONTENT = (
 )
 
 env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-needs_fix = False
 
-if not os.path.exists(env_path):
-    needs_fix = True
-    print("[AUTO] No .env file found.")
+# Skip .env fix if DATABASE_URL is already set in environment (e.g. Render, Docker)
+if os.environ.get("DATABASE_URL"):
+    print(f"[INFO] Using DATABASE_URL from environment: {os.environ['DATABASE_URL'][:30]}...")
 else:
-    # Check if existing .env has PostgreSQL (which won't work without a PG server)
-    with open(env_path, "r") as f:
-        content = f.read()
-    if "postgresql://" in content:
+    needs_fix = False
+    if not os.path.exists(env_path):
         needs_fix = True
-        print("[AUTO] .env has PostgreSQL config. Switching to SQLite for local dev...")
+        print("[AUTO] No .env file found.")
+    else:
+        with open(env_path, "r") as f:
+            content = f.read()
+        if "postgresql://" in content:
+            needs_fix = True
+            print("[AUTO] .env has PostgreSQL config. Switching to SQLite for local dev...")
 
-if needs_fix:
-    with open(env_path, "w") as f:
-        f.write(ENV_CONTENT)
-    print(f"[AUTO] Created {env_path} with SQLite configuration.")
+    if needs_fix:
+        with open(env_path, "w") as f:
+            f.write(ENV_CONTENT)
+        print(f"[AUTO] Created {env_path} with SQLite configuration.")
 
 from dotenv import load_dotenv
 load_dotenv()
