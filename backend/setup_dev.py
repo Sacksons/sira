@@ -8,6 +8,25 @@ Usage: python setup_dev.py
 import os
 import sys
 
+# Auto-create .env with SQLite if it doesn't exist
+env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if not os.path.exists(env_path):
+    print("[AUTO] No .env file found. Creating one with SQLite configuration...")
+    with open(env_path, "w") as f:
+        f.write(
+            "# SIRA Platform - Local Development Environment\n"
+            "APP_NAME=SIRA Platform\n"
+            "APP_VERSION=2.0.0\n"
+            "DEBUG=True\n"
+            "LOG_LEVEL=INFO\n"
+            "DATABASE_URL=sqlite:///./sira_dev.db\n"
+            "SECRET_KEY=dev-secret-key-change-in-production-min-32-chars-long\n"
+            "ALGORITHM=HS256\n"
+            "ACCESS_TOKEN_EXPIRE_MINUTES=120\n"
+            "ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000\n"
+        )
+    print(f"[AUTO] Created {env_path}")
+
 from dotenv import load_dotenv
 load_dotenv()
 
