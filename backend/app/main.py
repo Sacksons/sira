@@ -152,14 +152,32 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def health_check():
     """Health check endpoint for monitoring"""
     from datetime import datetime, timezone
-    from app.core.database import check_db_connection
+    from app.core.database import check_db_connection, SessionLocal
+    from app.models.user import User
 
     db_status = "healthy" if check_db_connection() else "unhealthy"
+
+    # Check if admin user exists
+    admin_exists = False
+    user_count = 0
+    db_url_prefix = settings.DATABASE_URL[:30] if settings.DATABASE_URL else "NOT SET"
+    try:
+        db = SessionLocal()
+        admin = db.query(User).filter(User.username == "admin").first()
+        admin_exists = admin is not None
+        user_count = db.query(User).count()
+        db.close()
+    except Exception as e:
+        db_url_prefix = f"ERROR: {e}"
 
     return {
         "status": "healthy" if db_status == "healthy" else "degraded",
         "version": settings.APP_VERSION,
         "database": db_status,
+        "database_url": db_url_prefix + "...",
+        "admin_user_exists": admin_exists,
+        "total_users": user_count,
+        "cors_origins": settings.cors_origins,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
