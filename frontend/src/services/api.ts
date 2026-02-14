@@ -1,9 +1,13 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../stores/authStore'
 
-// In production, call the Render backend directly. In dev, use Vite proxy (empty string).
+// Detect environment at runtime (not build time)
+const isLocal = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+
+// Local dev: empty string (uses Vite proxy). Deployed: call Render directly.
 const API_BASE_URL = import.meta.env.VITE_API_URL ||
-  (import.meta.env.PROD ? 'https://sira-7oeu.onrender.com' : '')
+  (isLocal ? '' : 'https://sira-7oeu.onrender.com')
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
