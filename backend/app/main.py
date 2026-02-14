@@ -106,34 +106,38 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware - handle wildcard properly
-cors_origins = settings.cors_origins
-if "*" in cors_origins:
-    # Wildcard with credentials doesn't work, allow all origins without credentials
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_credentials=False,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-else:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+# CORS middleware - allow all origins for cross-domain API access
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
+)
 
 
-# Request timing middleware
+# Request timing middleware - also adds CORS headers as fallback
 @app.middleware("http")
-async def add_process_time_header(request: Request, call_next):
+async def add_headers(request: Request, call_next):
     start_time = time.time()
+
+    # Handle preflight OPTIONS requests
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={}, status_code=200)
+        response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept"
+        return response
+
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
+    # Ensure CORS headers are always present
+    origin = request.headers.get("origin", "*")
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept"
     return response
 
 
@@ -180,6 +184,39 @@ async def health_check():
         "cors_origins": settings.cors_origins,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+
+# Test login endpoint (debug - remove after fixing)
+@app.get("/test-login", tags=["Debug"])
+async def test_login():
+    """Test that login works - tries admin/admin123 directly"""
+    from app.core.database import SessionLocal
+    from app.core.security import verify_password, create_access_token
+    from app.models.user import User
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.username == "admin").first()
+        if not user:
+            return {"status": "FAIL", "reason": "admin user not found in database"}
+
+        password_ok = verify_password("admin123", user.hashed_password)
+        if not password_ok:
+            return {"status": "FAIL", "reason": "password verification failed", "hash_prefix": user.hashed_password[:20]}
+
+        token = create_access_token(
+            data={"sub": user.username, "role": user.role, "user_id": user.id}
+        )
+        return {
+            "status": "OK",
+            "message": "Login works! admin/admin123 is valid",
+            "token_preview": token[:30] + "...",
+            "user_id": user.id,
+            "role": user.role,
+            "is_active": user.is_active,
+        }
+    finally:
+        db.close()
 
 
 # Root endpoint
