@@ -22,12 +22,43 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def _ensure_admin_user():
+    """Create admin user if it doesn't exist (runs on every startup for cloud deploys)"""
+    from app.core.database import SessionLocal
+    from app.core.security import hash_password
+    from app.models.user import User
+
+    db = SessionLocal()
+    try:
+        existing = db.query(User).filter(User.username == "admin").first()
+        if not existing:
+            admin = User(
+                username="admin",
+                email="admin@sira.com",
+                full_name="SIRA Administrator",
+                hashed_password=hash_password("admin123"),
+                role="admin",
+                is_active=True,
+            )
+            db.add(admin)
+            db.commit()
+            logger.info("Admin user created (admin / admin123)")
+        else:
+            logger.info("Admin user already exists")
+    except Exception as e:
+        logger.error(f"Error ensuring admin user: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting SIRA Platform API...")
     init_db()
+    _ensure_admin_user()
     logger.info("Database initialized")
     logger.info(f"SIRA Platform API v{settings.APP_VERSION} started successfully")
 
@@ -75,14 +106,25 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS middleware - handle wildcard properly
+cors_origins = settings.cors_origins
+if "*" in cors_origins:
+    # Wildcard with credentials doesn't work, allow all origins without credentials
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 # Request timing middleware
