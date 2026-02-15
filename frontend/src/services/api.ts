@@ -1,18 +1,14 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../stores/authStore'
 
-// Pure runtime detection — no build-time env vars that Vercel could override
-function getApiBaseUrl(): string {
-  if (typeof window === 'undefined') return ''
-  const { hostname } = window.location
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return '' // Uses Vite proxy in local dev
-  }
-  // All deployed environments call Render backend directly
-  return 'https://sira-7oeu.onrender.com'
-}
-
-const API_BASE_URL = getApiBaseUrl()
+// API routing:
+// - Local dev: Vite proxy forwards /api/* to localhost:8000 (see vite.config.ts)
+// - Production (Vercel): Edge Function + rewrites proxy /api/* to Render backend
+// Both use same-origin requests — no CORS needed.
+const RENDER_BACKEND = 'https://sira-7oeu.onrender.com'
+const isLocalDev = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const API_BASE_URL = isLocalDev ? '' : RENDER_BACKEND
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
