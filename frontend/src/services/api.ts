@@ -1,14 +1,10 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../stores/authStore'
 
-// API routing:
-// - Local dev: Vite proxy forwards /api/* to localhost:8000 (see vite.config.ts)
-// - Production (Vercel): Edge Function + rewrites proxy /api/* to Render backend
-// Both use same-origin requests — no CORS needed.
-const RENDER_BACKEND = 'https://sira-7oeu.onrender.com'
-const isLocalDev = typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-const API_BASE_URL = isLocalDev ? '' : RENDER_BACKEND
+// API base URL — empty string means same-origin requests.
+// Local dev: Vite proxy forwards /api/* to localhost:8000 (see vite.config.ts)
+// Production (PythonAnywhere): FastAPI serves both API and frontend on same domain
+const API_BASE_URL = ''
 
 export const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,

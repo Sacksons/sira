@@ -13,6 +13,7 @@ PyMySQL==1.1.0  # MySQL support for PythonAnywhere
 
 # ASGI support
 asgiref==3.7.2
+a2wsgi==1.10.8  # ASGI-to-WSGI adapter for PythonAnywhere
 
 # Authentication & Security
 python-jose[cryptography]==3.3.0

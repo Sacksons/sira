@@ -1,28 +1,33 @@
 """
-PythonAnywhere WSGI Configuration
-Copy this file to /var/www/<username>_pythonanywhere_com_wsgi.py
+PythonAnywhere WSGI Configuration for sackson.pythonanywhere.com
+
+Copy this to: /var/www/sackson_pythonanywhere_com_wsgi.py
+
+Then on PythonAnywhere Bash console:
+  cd ~/sira/backend
+  pip install -r requirements.txt
+  pip install a2wsgi
 """
 
 import sys
 import os
 
-# Add your project directory to the sys.path
-project_home = '/home/<username>/sira/backend'
+# Add project to path
+project_home = '/home/sackson/sira/backend'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
-# Set environment variables
-os.environ['DATABASE_URL'] = 'postgresql://<username>:<password>@<username>-<dbname>.postgres.pythonanywhere-services.com/<dbname>'
-os.environ['SECRET_KEY'] = 'your-production-secret-key-change-this'
-os.environ['DEBUG'] = 'False'
-os.environ['LOG_LEVEL'] = 'WARNING'
+# Environment variables — set BEFORE importing the app
+os.environ.setdefault('DATABASE_URL', 'postgresql://super:@sackson-5021.postgres.pythonanywhere-services.com:15021/sira')
+os.environ.setdefault('SECRET_KEY', 'sira-pythonanywhere-prod-key-change-this-to-something-random-min-32')
+os.environ.setdefault('DEBUG', 'False')
+os.environ.setdefault('LOG_LEVEL', 'INFO')
+os.environ.setdefault('ALLOWED_ORIGINS', 'https://sackson.pythonanywhere.com,http://sackson.pythonanywhere.com')
 
-# Import the FastAPI app
-from app.main import app
+# Import FastAPI app (WSGI-compatible version without async lifespan)
+from app.main_wsgi import app as fastapi_app
 
-# PythonAnywhere uses WSGI, so we need to wrap FastAPI
-# Option 1: Use uvicorn's ASGI to WSGI adapter (recommended)
-# Install: pip install a]sgi-wsgi-translator
-
-# For now, use the app directly
-application = app
+# FastAPI is ASGI — PythonAnywhere needs WSGI
+# a2wsgi converts ASGI apps to WSGI (pip install a2wsgi)
+from a2wsgi import ASGIMiddleware
+application = ASGIMiddleware(fastapi_app)
