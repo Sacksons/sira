@@ -17,12 +17,12 @@ project_home = '/home/sackson/sira/backend'
 if project_home not in sys.path:
     sys.path.insert(0, project_home)
 
-# Environment variables — set BEFORE importing the app
-os.environ.setdefault('DATABASE_URL', 'postgresql://super:@sackson-5021.postgres.pythonanywhere-services.com:15021/sira')
-os.environ.setdefault('SECRET_KEY', 'sira-pythonanywhere-prod-key-change-this-to-something-random-min-32')
-os.environ.setdefault('DEBUG', 'False')
-os.environ.setdefault('LOG_LEVEL', 'INFO')
-os.environ.setdefault('ALLOWED_ORIGINS', 'https://sackson.pythonanywhere.com,http://sackson.pythonanywhere.com')
+# Environment variables — use os.environ[] (not setdefault) to override any existing values
+os.environ['DATABASE_URL'] = 'postgresql://super:Moussa12.@sackson-5021.postgres.pythonanywhere-services.com:15021/sackson$sira'
+os.environ['SECRET_KEY'] = 'sira-pythonanywhere-prod-key-change-this-to-something-random-min-32'
+os.environ['DEBUG'] = 'False'
+os.environ['LOG_LEVEL'] = 'INFO'
+os.environ['ALLOWED_ORIGINS'] = 'https://sackson.pythonanywhere.com,http://sackson.pythonanywhere.com'
 
 # Import FastAPI app (WSGI-compatible version without async lifespan)
 from app.main_wsgi import app as fastapi_app
