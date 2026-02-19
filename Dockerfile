@@ -16,12 +16,16 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy backend code
 COPY backend/ .
 
-# Default env vars (overridden by Render environment variables)
+# Copy pre-built frontend dist into the container
+# FastAPI serves both API (/api/*) and frontend SPA (all other routes)
+COPY frontend/dist/ /app/frontend/dist/
+
+# Default env vars (overridden by Railway environment variables)
 ENV ALLOWED_ORIGINS=*
 ENV DEBUG=False
 
-# Render uses PORT env var (default 10000)
-ENV PORT=10000
+# Railway uses PORT env var (default 8080)
+ENV PORT=8080
 EXPOSE ${PORT}
 
 # Start server - admin user is created in FastAPI lifespan
