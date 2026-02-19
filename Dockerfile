@@ -1,3 +1,12 @@
+# Stage 1: Build frontend
+FROM node:20-slim AS frontend-build
+WORKDIR /frontend
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install
+COPY frontend/ .
+RUN npm run build
+
+# Stage 2: Python backend + built frontend
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -16,9 +25,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy backend code
 COPY backend/ .
 
-# Copy pre-built frontend dist into the container
+# Copy built frontend from stage 1
 # FastAPI serves both API (/api/*) and frontend SPA (all other routes)
-COPY frontend/dist/ /app/frontend/dist/
+COPY --from=frontend-build /frontend/dist /app/frontend/dist
 
 # Default env vars (overridden by Railway environment variables)
 ENV ALLOWED_ORIGINS=*
@@ -29,5 +38,4 @@ ENV PORT=8080
 EXPOSE ${PORT}
 
 # Start server - admin user is created in FastAPI lifespan
-# Use shell form explicitly so $PORT is expanded at runtime
 CMD ["/bin/sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
