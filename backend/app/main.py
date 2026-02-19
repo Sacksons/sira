@@ -64,9 +64,12 @@ async def lifespan(app: FastAPI):
     """Application lifespan events"""
     # Startup
     logger.info("Starting SIRA Platform API...")
-    init_db()
-    _ensure_admin_user()
-    logger.info("Database initialized")
+    try:
+        init_db()
+        _ensure_admin_user()
+        logger.info("Database initialized")
+    except Exception as e:
+        logger.error(f"Database initialization failed (app will start anyway): {e}")
     logger.info(f"SIRA Platform API v{settings.APP_VERSION} started successfully")
 
     yield
@@ -158,39 +161,30 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health check endpoint
+# Health check endpoint — must respond fast for Railway healthcheck
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Health check endpoint for monitoring"""
     from datetime import datetime, timezone
-    from app.core.database import check_db_connection, SessionLocal
-    from app.models.user import User
 
-    db_status = "healthy" if check_db_connection() else "unhealthy"
-
-    # Check if admin user exists
-    admin_exists = False
-    user_count = 0
-    db_url_prefix = settings.DATABASE_URL[:30] if settings.DATABASE_URL else "NOT SET"
-    try:
-        db = SessionLocal()
-        admin = db.query(User).filter(User.username == "admin").first()
-        admin_exists = admin is not None
-        user_count = db.query(User).count()
-        db.close()
-    except Exception as e:
-        db_url_prefix = f"ERROR: {e}"
-
-    return {
-        "status": "healthy" if db_status == "healthy" else "degraded",
+    result = {
+        "status": "healthy",
         "version": settings.APP_VERSION,
-        "database": db_status,
-        "database_url": db_url_prefix + "...",
-        "admin_user_exists": admin_exists,
-        "total_users": user_count,
-        "cors_origins": settings.cors_origins,
-        "timestamp": datetime.now(timezone.utc).isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
+
+    # Try DB check but don't block if it's slow/unavailable
+    try:
+        from app.core.database import check_db_connection
+        db_ok = check_db_connection()
+        result["database"] = "healthy" if db_ok else "unhealthy"
+        if not db_ok:
+            result["status"] = "degraded"
+    except Exception as e:
+        result["database"] = f"error: {e}"
+        result["status"] = "degraded"
+
+    return result
 
 
 # Test login endpoint (debug - remove after fixing)
