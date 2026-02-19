@@ -1,18 +1,25 @@
 """
 SIRA Platform - Main Application Entry Point
 Shipping Intelligence & Risk Analytics Platform
+
+Serves both the API (/api/*) and the frontend SPA (all other routes).
 """
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from pathlib import Path
 import logging
 import time
 
 from app.core.config import settings
 from app.core.database import init_db, engine, Base
 from app.api import api_router
+
+# Frontend dist directory (copied into Docker container at /app/frontend/dist/)
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 
 # Configure logging
 logging.basicConfig(
@@ -219,21 +226,32 @@ async def test_login():
         db.close()
 
 
-# Root endpoint
-@app.get("/", tags=["Root"])
-async def root():
-    """Root endpoint with API information"""
-    return {
+# Include API router (must be before SPA catch-all)
+app.include_router(api_router, prefix="/api")
+
+# --- Frontend SPA serving ---
+# Mount frontend static assets (JS/CSS bundles)
+if FRONTEND_DIR.exists() and (FRONTEND_DIR / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIR / "assets")), name="static-assets")
+    logger.info(f"Serving frontend assets from {FRONTEND_DIR / 'assets'}")
+
+
+# SPA catch-all: serve index.html for all non-API routes
+@app.get("/{full_path:path}", include_in_schema=False)
+async def serve_spa(request: Request, full_path: str):
+    """Serve the React SPA for all non-API routes"""
+    # If frontend is built, serve index.html
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.exists():
+        return FileResponse(str(index_file), media_type="text/html")
+    # Fallback: API info (no frontend built)
+    return JSONResponse({
         "name": settings.APP_NAME,
         "version": settings.APP_VERSION,
         "description": "Shipping Intelligence & Risk Analytics Platform",
         "docs": "/docs",
-        "health": "/health"
-    }
-
-
-# Include API router
-app.include_router(api_router, prefix="/api")
+        "health": "/health",
+    })
 
 
 # For running with uvicorn directly
