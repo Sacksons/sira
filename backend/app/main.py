@@ -18,8 +18,13 @@ from app.core.config import settings
 from app.core.database import init_db, engine, Base
 from app.api import api_router
 
-# Frontend dist directory (copied into Docker container at /app/frontend/dist/)
-FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
+# Frontend dist directory
+# Docker: /app/app/main.py → parent.parent = /app → /app/frontend/dist
+# Local:  backend/app/main.py → parent.parent = backend/ → need to go up one more
+_app_dir = Path(__file__).resolve().parent.parent
+FRONTEND_DIR = _app_dir / "frontend" / "dist"
+if not FRONTEND_DIR.exists():
+    FRONTEND_DIR = _app_dir.parent / "frontend" / "dist"
 
 # Configure logging
 logging.basicConfig(
